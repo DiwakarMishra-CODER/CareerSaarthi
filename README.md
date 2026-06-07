@@ -137,7 +137,7 @@ CareerForge/
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/DiwakarMishra-CODER/CareerForge.git
+git clone https://github.com/DiwakarMishra-CODER/CareerSaarthi.git
 cd CareerForge
 ```
 

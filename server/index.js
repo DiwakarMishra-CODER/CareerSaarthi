@@ -33,7 +33,7 @@ app.get('/health', (req, res) =>
 if (!process.env.VERCEL) {
   // Start server with self-healing EADDRINUSE recycling
   const server = app.listen(PORT, () =>
-    console.log(`🚀 CareerForge server running on http://localhost:${PORT} (Supabase)`)
+    console.log(`🚀 CareerSaarthi server running on http://localhost:${PORT} (Supabase)`)
   );
 
   server.on('error', (err) => {
@@ -45,7 +45,7 @@ if (!process.env.VERCEL) {
         setTimeout(() => {
           try {
             server.listen(PORT, () => {
-              console.log(`🚀 CareerForge server running on http://localhost:${PORT} (Supabase)`);
+              console.log(`🚀 CareerSaarthi server running on http://localhost:${PORT} (Supabase)`);
             });
           } catch (retryErr) {
             console.error('Self-healing port recycle failed:', retryErr);

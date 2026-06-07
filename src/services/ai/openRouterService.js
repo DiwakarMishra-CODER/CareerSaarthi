@@ -47,7 +47,7 @@ export const generateAIResponse = async (prompt, systemPrompt = "", featureType 
                 'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
                 // Required OpenRouter headers
                 'HTTP-Referer': window.location.origin, // Pass the site URL
-                'X-Title': 'CareerForge',               // Pass the site name
+                'X-Title': 'CareerSaarthi',             // Pass the site name
             },
             body: JSON.stringify(payload)
         });

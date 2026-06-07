@@ -6,6 +6,10 @@
 
 ### An AI-powered career acceleration platform for high-ambition students
 
+[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-careersaarthi.vercel.app-4F46E5?style=for-the-badge)](https://careersaarthi.vercel.app)
+
+<br />
+
 [![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=white)](https://react.dev)
 [![Vite](https://img.shields.io/badge/Vite-7-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev)
 [![Node.js](https://img.shields.io/badge/Node.js-Express-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org)
@@ -206,22 +210,14 @@ CareerSaarthi is built with a **premium-first** design ethos:
 
 ---
 
-## 👥 Team
-
-Built with ❤️ by students of **Maharaja Agrasen Institute of Technology, Delhi**:
-
-| Name | Role |
-|---|---|
-| **Diwakar Mishra** | Full Stack & UI/UX |
-| **Ishan Gupta** | Full Stack |
-| **Kshitij Garg** | Full Stack |
-| **Rahul Kumar** | Full Stack |
-
----
-
 ## 📬 Contact
 
-For queries, collaborations, or feedback — reach out via GitHub Issues or connect with the team on LinkedIn.
+Built by **Diwakar Mishra** — Full Stack Developer & UI/UX Enthusiast, MAIT Delhi.
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Diwakar_Mishra-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/diwakar-mishra-dev/)
+[![GitHub](https://img.shields.io/badge/GitHub-DiwakarMishra--CODER-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/DiwakarMishra-CODER)
+
+For queries, collaborations, or feedback — open a GitHub Issue or connect on LinkedIn.
 
 ---
 

@@ -212,19 +212,19 @@ CareerSaarthi is built with a **premium-first** design ethos:
 
 ## 📬 Contact
 
-Built by **Diwakar Mishra**
+Built by **Diwakar Mishra** — Full Stack Developer & UI/UX Enthusiast, MAIT Delhi.
 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Diwakar_Mishra-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/diwakar-mishra-dev/)
 
 ### Contributors
 
-**Kshitij Garg**
+**Kshitij Garg** — AI & Data Analytics Enthusiast, MAIT Delhi
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Kshitij_Garg-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/kshitij-garg-047221344/)
 
-**Rahul Kumar**
+**Rahul Kumar** — Software Developer
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Rahul_Kumar-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/rahulkumarmait/)
 
-**Ishan Gupta**
+**Ishan Gupta** — Full Stack Developer
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Ishan_Gupta-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/ishan-gupta-08686631a/)
 
 For queries, collaborations, or feedback — connect on LinkedIn.

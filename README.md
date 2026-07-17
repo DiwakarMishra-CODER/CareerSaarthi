@@ -27,7 +27,7 @@
 
 ## 📖 What is CareerSaarthi?
 
-**CareerSaarthi** (formerly CareerForge) is a full-stack, AI-powered career mentorship ecosystem built for students navigating the competitive tech industry. It consolidates every tool a job-seeker needs — resume building, AI analysis, mock interviews, LinkedIn optimization, and job discovery — into one beautifully crafted platform.
+**CareerSaarthi** (formerly NexaGen AI) is a full-stack, AI-powered career mentorship ecosystem built for students navigating the competitive tech industry. It consolidates every tool a job-seeker needs — resume building, AI analysis, mock interviews, LinkedIn optimization, and job discovery — into one beautifully crafted platform.
 
 The platform features a **cinematic 3D landing experience** built with Three.js and React Three Fiber, smooth GPU-accelerated animations via GSAP + Framer Motion, and a robust Node.js/Supabase backend powering real AI integrations through OpenRouter LLMs.
 
@@ -215,6 +215,7 @@ CareerSaarthi is built with a **premium-first** design ethos:
 Built by **Diwakar Mishra** — Full Stack Developer & UI/UX Enthusiast.
 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Diwakar_Mishra-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/diwakar-mishra-dev/)
+
 
 ### Contributors
 

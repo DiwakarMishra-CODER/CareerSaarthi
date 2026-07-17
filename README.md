@@ -216,6 +216,7 @@ Built by **Diwakar Mishra** — Full Stack Developer & UI/UX Enthusiast.
 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Diwakar_Mishra-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/diwakar-mishra-dev/)
 
+
 ### Contributors
 
 **Kshitij Garg** — AI & Data Analytics Enthusiast
@@ -227,7 +228,7 @@ Built by **Diwakar Mishra** — Full Stack Developer & UI/UX Enthusiast.
 **Ishan Gupta** — Full Stack Developer
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Ishan_Gupta-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/ishan-gupta-08686631a/)
 
-For queries, collaborations, or feedback — open a GitHub Issue or connect on LinkedIn.
+For queries, collaborations, or feedback — connect on LinkedIn.
 
 ---
 

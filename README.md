@@ -212,12 +212,22 @@ CareerSaarthi is built with a **premium-first** design ethos:
 
 ## 📬 Contact
 
-Built by **Diwakar Mishra** — Full Stack Developer & UI/UX Enthusiast, MAIT Delhi.
+Built by **Diwakar Mishra**
 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Diwakar_Mishra-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/diwakar-mishra-dev/)
-[![GitHub](https://img.shields.io/badge/GitHub-DiwakarMishra--CODER-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/DiwakarMishra-CODER)
 
-For queries, collaborations, or feedback — open a GitHub Issue or connect on LinkedIn.
+### Contributors
+
+**Kshitij Garg**
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Kshitij_Garg-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/kshitij-garg-047221344/)
+
+**Rahul Kumar**
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Rahul_Kumar-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/rahulkumarmait/)
+
+**Ishan Gupta**
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Ishan_Gupta-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/ishan-gupta-08686631a/)
+
+For queries, collaborations, or feedback — connect on LinkedIn.
 
 ---
 

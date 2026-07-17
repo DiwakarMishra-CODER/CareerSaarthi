@@ -27,7 +27,7 @@
 
 ## 📖 What is CareerSaarthi?
 
-**CareerSaarthi** (formerly CareerForge) is a full-stack, AI-powered career mentorship ecosystem built for students navigating the competitive tech industry. It consolidates every tool a job-seeker needs — resume building, AI analysis, mock interviews, LinkedIn optimization, and job discovery — into one beautifully crafted platform.
+**CareerSaarthi** (formerly NexaGen AI) is a full-stack, AI-powered career mentorship ecosystem built for students navigating the competitive tech industry. It consolidates every tool a job-seeker needs — resume building, AI analysis, mock interviews, LinkedIn optimization, and job discovery — into one beautifully crafted platform.
 
 The platform features a **cinematic 3D landing experience** built with Three.js and React Three Fiber, smooth GPU-accelerated animations via GSAP + Framer Motion, and a robust Node.js/Supabase backend powering real AI integrations through OpenRouter LLMs.
 
@@ -212,10 +212,20 @@ CareerSaarthi is built with a **premium-first** design ethos:
 
 ## 📬 Contact
 
-Built by **Diwakar Mishra** — Full Stack Developer & UI/UX Enthusiast, MAIT Delhi.
+Built by **Diwakar Mishra** — Full Stack Developer & UI/UX Enthusiast.
 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Diwakar_Mishra-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/diwakar-mishra-dev/)
-[![GitHub](https://img.shields.io/badge/GitHub-DiwakarMishra--CODER-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/DiwakarMishra-CODER)
+
+### Contributors
+
+**Kshitij Garg** — AI & Data Analytics Enthusiast
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Kshitij_Garg-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/kshitij-garg-047221344/)
+
+**Rahul Kumar** — Software Developer
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Rahul_Kumar-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/rahulkumarmait/)
+
+**Ishan Gupta** — Full Stack Developer
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Ishan_Gupta-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/ishan-gupta-08686631a/)
 
 For queries, collaborations, or feedback — open a GitHub Issue or connect on LinkedIn.
 

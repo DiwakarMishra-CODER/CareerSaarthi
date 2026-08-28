@@ -2,7 +2,6 @@ import React, { useState, useEffect, Suspense, lazy } from "react";
 import { Link, useOutletContext } from "react-router-dom";
 import { api } from "../api/client.js";
 import Footer from "../components/UI/Footer.jsx";
-import { fetchWithRetry, getApiKey } from "../utils/api.js";
 import { motion } from "framer-motion";
 import {
   Sparkles,
@@ -88,16 +87,12 @@ export default function Dashboard() {
           let newAiSuggestion = null;
           if (profile && profile.current_role && profile.career_goals) {
             try {
-              const apiKey = getApiKey();
-              const response = await fetchWithRetry(
-                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-                { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ parts: [{ text: `Based on this user's profile (Role: ${profile.current_role}, Goal: ${profile.career_goals}), provide one single, short, and actionable suggestion for their next career step. Be encouraging.` }] }] }) }
-              );
-              if (response.ok) {
-                const data = await response.json();
-                newAiSuggestion = data.candidates[0].content.parts[0].text.trim();
-                setAiSuggestion(newAiSuggestion);
-              }
+              const data = await api.post('/api/ai/gemini', {
+                model: 'gemini-2.0-flash',
+                body: { contents: [{ parts: [{ text: `Based on this user's profile (Role: ${profile.current_role}, Goal: ${profile.career_goals}), provide one single, short, and actionable suggestion for their next career step. Be encouraging.` }] }] },
+              });
+              newAiSuggestion = data.candidates[0].content.parts[0].text.trim();
+              setAiSuggestion(newAiSuggestion);
             } catch (e) { console.error("AI suggestion fetch failed:", e); }
           }
         } catch (error) {

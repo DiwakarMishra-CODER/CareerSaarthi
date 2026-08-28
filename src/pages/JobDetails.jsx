@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { fetchWithRetry, getApiKey } from '../utils/api';
+import { api } from '../api/client';
 import { ArrowLeft, Briefcase, DollarSign, TrendingUp, Award, Loader2, IndianRupee } from 'lucide-react';
 import BackgroundAnimation from '../components/UI/BackgroundAnimation';
 
@@ -29,18 +29,13 @@ export default function JobDetails() {
                     }
                 `;
 
-                const apiKey = getApiKey();
-                const response = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
+                const data = await api.post('/api/ai/gemini', {
+                    model: 'gemini-2.5-flash',
+                    body: {
                         contents: [{ parts: [{ text: prompt }] }],
                         generationConfig: { responseMimeType: "application/json" },
-                    }),
+                    },
                 });
-
-                if (!response.ok) throw new Error("API request for job details failed");
-                const data = await response.json();
                 const result = JSON.parse(data.candidates[0].content.parts[0].text);
                 setDetails(result);
             } catch (error) {

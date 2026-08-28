@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { TrendingUp, ArrowRight, Loader2 } from 'lucide-react';
-import { fetchWithRetry, getApiKey } from '../../utils/api';
+import { api } from '../../api/client';
 
 const defaultTrendingJobs = [
     { title: "Data Scientist", field: "Data & AI", type: "tech" },
@@ -54,22 +54,13 @@ export default function TrendingJobs({ profile }) {
                 For each job, provide a "title", a general "field", and a "type" ('tech' or 'business').
                 Return ONLY a valid JSON object with the structure: { "jobs": [ { "title": "string", "field": "string", "type": "string" } ] }`;
 
-            const apiKey = getApiKey();
-            const response = await fetchWithRetry(
-                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-                {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: prompt }] }],
-                        generationConfig: { responseMimeType: 'application/json' },
-                    }),
-                }
-            );
-
-            if (!response.ok) throw new Error('Failed to fetch personalized jobs');
-
-            const data = await response.json();
+            const data = await api.post('/api/ai/gemini', {
+                model: 'gemini-2.5-flash',
+                body: {
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: { responseMimeType: 'application/json' },
+                },
+            });
             const result = JSON.parse(data.candidates[0].content.parts[0].text);
 
             if (result.jobs && result.jobs.length > 0) {

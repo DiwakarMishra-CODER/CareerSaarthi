@@ -24,6 +24,7 @@ app.use('/api/roadmaps',   require('./routes/roadmaps'));
 app.use('/api/interviews', require('./routes/interviews'));
 app.use('/api/upload',     require('./routes/upload'));
 app.use('/api/jobs',       require('./routes/jobs'));
+app.use('/api/ai',         require('./routes/ai'));
 
 // Health check
 app.get('/health', (req, res) =>

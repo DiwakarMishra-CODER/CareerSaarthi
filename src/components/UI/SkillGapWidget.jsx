@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchWithRetry, getApiKey } from '../../utils/api';
+import { api } from '../../api/client';
 import { Target, Loader2, ArrowRight } from 'lucide-react';
 
 export default function SkillGapWidget({ profile, roadmap }) {
@@ -39,22 +39,13 @@ export default function SkillGapWidget({ profile, roadmap }) {
 
           Return ONLY a valid JSON object with the structure: { "skill_gaps": ["string"] }`;
 
-        const apiKey = getApiKey();
-        const response = await fetchWithRetry(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: prompt }] }],
-              generationConfig: { responseMimeType: 'application/json' },
-            }),
-          }
-        );
-
-        if (!response.ok) throw new Error('Skill gap analysis failed');
-
-        const data = await response.json();
+        const data = await api.post('/api/ai/gemini', {
+          model: 'gemini-2.5-flash',
+          body: {
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { responseMimeType: 'application/json' },
+          },
+        });
         const jsonString = data.candidates[0].content.parts[0].text;
         const result = JSON.parse(jsonString);
 

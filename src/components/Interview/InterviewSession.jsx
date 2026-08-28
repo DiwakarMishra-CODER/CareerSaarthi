@@ -202,7 +202,7 @@ export default function InterviewSession({ config, onEnd }) {
                 .map(m => `${m.role === 'user' ? 'Candidate' : 'Interviewer'}: ${m.content}`)
                 .join('\n\n');
 
-            const prompt = `You are an expert HR manager and technical interview coach. 
+            const prompt = `You are an expert HR manager and technical interview coach.
 Analyze the following interview transcript for a "${config.jobTitle}" position at "${config.company}".
 Provide a detailed performance report.
 
@@ -211,14 +211,18 @@ TRANSCRIPT:
 ${transcriptText}
 """
 
+Score these three dimensions specifically:
+- clarity: how clearly and concisely the candidate communicated their ideas.
+- starStructure: how well behavioral answers followed the Situation/Task/Action/Result structure.
+- keywordDensity: how well the candidate used role- and domain-relevant technical terms and keywords for "${config.jobTitle}".
+
 Return ONLY a valid JSON object matching this schema. Do not include any markdown formatting, headers, backticks, or text outside the JSON:
 {
   "overallScore": number (1-100),
   "scores": {
-    "problemSolving": number (1-100),
-    "communication": number (1-100),
-    "confidence": number (1-100),
-    "accuracy": number (1-100)
+    "clarity": number (1-100),
+    "starStructure": number (1-100),
+    "keywordDensity": number (1-100)
   },
   "strengths": ["string", "string", "string"],
   "weakPoints": ["string", "string", "string"],

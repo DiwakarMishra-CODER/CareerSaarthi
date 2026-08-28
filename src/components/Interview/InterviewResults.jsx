@@ -27,10 +27,9 @@ export default function InterviewResults({
     const suggestedResources = mapWeakAreasToResources([...weakTopics, ...weakPoints]);
 
     const sectionScores = {
-        problemSolving: scores.problemSolving || overallScore,
-        communication: scores.communication || overallScore,
-        confidence: scores.confidence || overallScore,
-        accuracy: scores.accuracy || overallScore
+        clarity: scores.clarity || overallScore,
+        starStructure: scores.starStructure || overallScore,
+        keywordDensity: scores.keywordDensity || overallScore
     };
 
     const getScoreColor = (score) => {
@@ -83,6 +82,26 @@ export default function InterviewResults({
                         <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
                             <div className="text-slate-500 text-[10px] font-black uppercase mb-1">Accuracy</div>
                             <div className="text-white font-black text-xl">{overallScore}%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="bg-white/5 border border-white/10 rounded-[2rem] p-8 mb-12">
+                    <h3 className="text-base font-black text-cyan-400 mb-6 flex items-center gap-2 uppercase">
+                        <BarChart3 className="w-4 h-4" /> Score Breakdown
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="bg-white/5 border border-white/10 rounded-2xl p-4 text-center">
+                            <div className="text-slate-500 text-[10px] font-black uppercase mb-1">Clarity</div>
+                            <div className={`font-black text-2xl ${getScoreColor(sectionScores.clarity)}`}>{sectionScores.clarity}</div>
+                        </div>
+                        <div className="bg-white/5 border border-white/10 rounded-2xl p-4 text-center">
+                            <div className="text-slate-500 text-[10px] font-black uppercase mb-1">STAR Structure</div>
+                            <div className={`font-black text-2xl ${getScoreColor(sectionScores.starStructure)}`}>{sectionScores.starStructure}</div>
+                        </div>
+                        <div className="bg-white/5 border border-white/10 rounded-2xl p-4 text-center">
+                            <div className="text-slate-500 text-[10px] font-black uppercase mb-1">Keyword Density</div>
+                            <div className={`font-black text-2xl ${getScoreColor(sectionScores.keywordDensity)}`}>{sectionScores.keywordDensity}</div>
                         </div>
                     </div>
                 </div>

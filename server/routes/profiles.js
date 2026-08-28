@@ -55,15 +55,24 @@ router.post('/analyze-linkedin', upload.single('linkedinPdf'), async (req, res) 
     const data = await pdf(req.file.buffer);
     const profileText = data.text;
 
-    const prompt = `You are an expert LinkedIn Profile Strategist and Career Coach. 
+    // Cross-reference with the user's stated skills, same as resumes.js's /analyze route.
+    const { data: userProfile } = await supabase
+      .from('profiles')
+      .select('skills')
+      .eq('user_id', userId)
+      .maybeSingle();
+    const userSkills = userProfile?.skills?.join(', ') || 'Not specified';
+
+    const prompt = `You are an expert LinkedIn Profile Strategist and Career Coach.
     Analyze the following LinkedIn profile extracted text and provide a comprehensive, actionable optimization report.
     Rules:
     1. Return ONLY a valid JSON object.
     2. Be critical but constructive.
     3. For 'improved' experience points, use strong action verbs and quantifiable results.
-    4. identify matching and missing skills based on high-demand roles.
+    4. identify matching and missing skills based on high-demand roles, cross-referencing the user's stated profile skills below.
     Profile Context:
     """${profileText}"""
+    User's Stated Profile Skills: ${userSkills}
     Required JSON Structure:
     {
       "overallScore": number (1-100),

@@ -1,6 +1,7 @@
-import { Trophy, Target, AlertTriangle, CheckCircle, ArrowRight, RotateCcw, Home, TrendingUp, Sparkles, Brain, Award, BarChart3, GraduationCap } from 'lucide-react';
+import { Trophy, Target, AlertTriangle, CheckCircle, ArrowRight, RotateCcw, Home, TrendingUp, Sparkles, Brain, Award, BarChart3, GraduationCap, MessageCircle, ListChecks, Hash, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { mapWeakAreasToResources } from '../../data/interviewData';
+import BackgroundAnimation from '../UI/BackgroundAnimation';
 
 export default function InterviewResults({
     results,
@@ -48,8 +49,15 @@ export default function InterviewResults({
 
     const scoreInfo = getScoreMessage(overallScore);
 
+    const scoreDimensions = [
+        { key: 'clarity', label: 'Clarity', caption: 'How clearly and concisely you communicated your answers.', icon: MessageCircle },
+        { key: 'starStructure', label: 'STAR Structure', caption: "Situation → Task → Action → Result — a framework for structuring behavioral answers so interviewers can follow your story.", icon: ListChecks },
+        { key: 'keywordDensity', label: 'Keyword Density', caption: 'How much role-relevant technical terminology showed up in your answers.', icon: Hash },
+    ];
+
     return (
-        <div className="min-h-screen bg-[#0a0a0f] relative overflow-hidden p-6 flex flex-col items-center">
+        <div className="min-h-screen relative overflow-hidden p-6 flex flex-col items-center text-white">
+            <BackgroundAnimation />
             <div className="max-w-4xl w-full relative z-10">
                 <div className="text-center mb-12">
                     <div className="inline-flex items-center gap-3 px-5 py-2 bg-white/5 border border-white/10 rounded-full text-cyan-400 text-xs font-black uppercase tracking-widest mb-6">
@@ -86,28 +94,41 @@ export default function InterviewResults({
                     </div>
                 </div>
 
-                <div className="bg-white/5 border border-white/10 rounded-[2rem] p-8 mb-12">
-                    <h3 className="text-base font-black text-cyan-400 mb-6 flex items-center gap-2 uppercase">
+                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2rem] p-8 mb-12">
+                    <h3 className="text-base font-black text-cyan-400 mb-1 flex items-center gap-2 uppercase">
                         <BarChart3 className="w-4 h-4" /> Score Breakdown
                     </h3>
+                    <p className="text-slate-500 text-xs font-medium mb-6">What each score below actually measures:</p>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="bg-white/5 border border-white/10 rounded-2xl p-4 text-center">
-                            <div className="text-slate-500 text-[10px] font-black uppercase mb-1">Clarity</div>
-                            <div className={`font-black text-2xl ${getScoreColor(sectionScores.clarity)}`}>{sectionScores.clarity}</div>
-                        </div>
-                        <div className="bg-white/5 border border-white/10 rounded-2xl p-4 text-center">
-                            <div className="text-slate-500 text-[10px] font-black uppercase mb-1">STAR Structure</div>
-                            <div className={`font-black text-2xl ${getScoreColor(sectionScores.starStructure)}`}>{sectionScores.starStructure}</div>
-                        </div>
-                        <div className="bg-white/5 border border-white/10 rounded-2xl p-4 text-center">
-                            <div className="text-slate-500 text-[10px] font-black uppercase mb-1">Keyword Density</div>
-                            <div className={`font-black text-2xl ${getScoreColor(sectionScores.keywordDensity)}`}>{sectionScores.keywordDensity}</div>
-                        </div>
+                        {scoreDimensions.map(({ key, label, caption, icon: Icon }) => {
+                            const score = sectionScores[key];
+                            return (
+                                <div key={key} className="bg-white/5 border border-white/10 rounded-2xl p-5 flex flex-col gap-3">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2 text-slate-400">
+                                            <Icon className="w-4 h-4" />
+                                            <span className="text-[10px] font-black uppercase tracking-wider">{label}</span>
+                                        </div>
+                                        <span className={`font-black text-xl ${getScoreColor(score)}`}>{score}</span>
+                                    </div>
+                                    <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                                        <div
+                                            className={`h-full rounded-full ${getScoreColor(score).replace('text-', 'bg-')}`}
+                                            style={{ width: `${Math.max(0, Math.min(100, score))}%` }}
+                                        />
+                                    </div>
+                                    <p className="text-slate-500 text-[11px] leading-relaxed flex items-start gap-1.5">
+                                        <Info className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                                        {caption}
+                                    </p>
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-                    <div className="bg-white/5 border border-white/10 rounded-[2rem] p-8">
+                    <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2rem] p-8">
                         <h3 className="text-base font-black text-emerald-400 mb-4 flex items-center gap-2 uppercase">
                             <Award className="w-4 h-4" /> Key Strengths
                         </h3>
@@ -121,7 +142,7 @@ export default function InterviewResults({
                         </div>
                     </div>
 
-                    <div className="bg-white/5 border border-white/10 rounded-[2rem] p-8">
+                    <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2rem] p-8">
                         <h3 className="text-base font-black text-amber-400 mb-4 flex items-center gap-2 uppercase">
                             <Brain className="w-4 h-4" /> Growth Areas
                         </h3>
@@ -136,7 +157,7 @@ export default function InterviewResults({
                     </div>
                 </div>
 
-                <div className="bg-white/5 border border-white/10 rounded-[2rem] p-8 mb-12">
+                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2rem] p-8 mb-12">
                     <h3 className="text-lg font-black text-cyan-400 mb-8 flex items-center gap-3 uppercase">
                         <GraduationCap className="w-5 h-5" /> Roadmap to Success
                     </h3>

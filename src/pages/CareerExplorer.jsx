@@ -3,6 +3,7 @@ import { useOutletContext } from "react-router-dom";
 import { generateAIResponse } from '../services/ai/openRouterService';
 import { Map, Loader2, Sparkles, BookOpen, BrainCircuit, HeartPulse, Palette, Briefcase, Atom, ArrowLeft, Target, TrendingUp, Youtube, Globe, FileText, CalendarDays, CheckCircle, Search, History, ArrowRight } from 'lucide-react';
 import { api, getUserId } from '../api/client.js';
+import { getCachedData as getCached, setCachedData as setCached } from '../utils/cache.js';
 
 const careerFields = [
   { name: 'Technology', icon: BrainCircuit, color: 'text-cyan-400' },
@@ -20,39 +21,26 @@ const resourceIcons = {
   default: <Globe className="w-4 h-4 text-gray-400" />,
 };
 
-// --- Improved Caching Logic ---
+// --- Roadmap progress caching (Sets need array conversion for JSON) ---
 const getCacheKeyForJob = (jobTitle) => `roadmap_progress_${jobTitle.trim().toLowerCase().replace(/\s+/g, '_')}`;
-const CACHE_DURATION_MS = 30 * 60 * 1000; // 30 minutes
 
 const getCachedData = (jobTitle) => {
-  const cacheKey = getCacheKeyForJob(jobTitle);
-  try {
-    const cached = sessionStorage.getItem(cacheKey);
-    if (!cached) return null;
-    const { data, timestamp } = JSON.parse(cached);
-    if (Date.now() - timestamp > CACHE_DURATION_MS) {
-      sessionStorage.removeItem(cacheKey);
-      return null;
-    }
-    // Convert arrays back to Sets
-    data.completedMilestones = new Set(data.completedMilestones);
-    data.completedResources = new Set(data.completedResources);
-    return data;
-  } catch (error) { return null; }
+  const data = getCached(getCacheKeyForJob(jobTitle));
+  if (!data) return null;
+  // Convert arrays back to Sets
+  data.completedMilestones = new Set(data.completedMilestones);
+  data.completedResources = new Set(data.completedResources);
+  return data;
 };
 
 const setCachedData = (jobTitle, data) => {
-  const cacheKey = getCacheKeyForJob(jobTitle);
-  try {
-    // Convert Sets to arrays for JSON serialization
-    const serializableData = {
-        ...data,
-        completedMilestones: [...data.completedMilestones],
-        completedResources: [...data.completedResources],
-    };
-    const cachePayload = { data: serializableData, timestamp: Date.now() };
-    sessionStorage.setItem(cacheKey, JSON.stringify(cachePayload));
-  } catch (error) { console.error("Failed to write to cache:", error); }
+  // Convert Sets to arrays for JSON serialization
+  const serializableData = {
+    ...data,
+    completedMilestones: [...data.completedMilestones],
+    completedResources: [...data.completedResources],
+  };
+  setCached(getCacheKeyForJob(jobTitle), serializableData);
 };
 // --- End Caching Logic ---
 

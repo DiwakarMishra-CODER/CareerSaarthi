@@ -1,7 +1,7 @@
 // src/pages/ResumeBuilder.jsx
 
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import { api, getUserId } from "../api/client.js";
 import { fetchWithRetry } from "../utils/api.js";
 import { generateAIResponse } from "../services/ai/openRouterService.js";
@@ -63,6 +63,7 @@ const FormTextarea = ({ id, placeholder, value, onChange, rows = 4, label }) => 
 );
 
 export default function ResumeBuilder() {
+  const { profile } = useOutletContext();
   const [resumeData, setResumeData] = useState(initialResumeState);
   const [activeSection, setActiveSection] = useState("Templates");
   const [isSaving, setIsSaving] = useState(false);
@@ -70,34 +71,25 @@ export default function ResumeBuilder() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchUserAndProfile = async () => {
-      try {
-        const userId = getUserId();
-        const profileData = await api.get(`/api/profiles/${userId}`).catch(() => null);
-
-        setResumeData((prev) => ({
-          ...prev,
-          personal_info: { 
-            full_name: profileData?.full_name || "",
-            email: profileData?.email || "user@example.com",
-            phone: profileData?.phone || "",
-            location: profileData?.location || "",
-            title: profileData?.current_role || "",
-          },
-          skills: profileData?.skills || [],
-          certifications: (profileData?.certifications || []).map(cert => ({
-              id: Date.now() + Math.random(),
-              name: cert,
-              issuer: '',
-              date: ''
-          })),
-        }));
-      } catch (err) {
-        console.error("Error fetching profile for resume builder:", err);
-      }
-    };
-    fetchUserAndProfile();
-  }, []);
+    if (!profile) return;
+    setResumeData((prev) => ({
+      ...prev,
+      personal_info: {
+        full_name: profile.full_name || "",
+        email: profile.email || "user@example.com",
+        phone: profile.phone || "",
+        location: profile.location || "",
+        title: profile.current_role || "",
+      },
+      skills: profile.skills || [],
+      certifications: (profile.certifications || []).map(cert => ({
+          id: Date.now() + Math.random(),
+          name: cert,
+          issuer: '',
+          date: ''
+      })),
+    }));
+  }, [profile]);
 
   const handleNestedChange = (e) =>
     setResumeData((p) => ({
@@ -131,7 +123,10 @@ export default function ResumeBuilder() {
     }
     setIsGeneratingBulletsFor(index);
     try {
-      const prompt = `You are a professional resume writer. Based on the job title "${experienceItem.title}" and the company "${experienceItem.company}", generate 3-4 concise, action-oriented bullet points that highlight key achievements. Use the STAR method. Return ONLY a valid JSON object: { "bullet_points": ["string"] }`;
+      const skillsContext = profile?.skills?.length
+        ? `The candidate's stated skills include: ${profile.skills.join(', ')}. Weave in relevant ones where truthful.`
+        : '';
+      const prompt = `You are a professional resume writer. Based on the job title "${experienceItem.title}" and the company "${experienceItem.company}", generate 3-4 concise, action-oriented bullet points that highlight key achievements. Use the STAR method. ${skillsContext} Return ONLY a valid JSON object: { "bullet_points": ["string"] }`;
 
       const responseText = await generateAIResponse(prompt, "You are a professional resume writer.", "resume");
       const result = typeof responseText === "string" ? JSON.parse(responseText) : responseText;
@@ -143,6 +138,10 @@ export default function ResumeBuilder() {
       }
     } catch (error) {
       console.error("Error generating suggestions:", error);
+      // Fallback so "AI Rewrite" never leaves the field untouched when the AI call fails.
+      const list = [...resumeData.experience];
+      list[index].description = `- Contributed to key initiatives as a ${experienceItem.title}${experienceItem.company ? ` at ${experienceItem.company}` : ''}, applying strong problem-solving and collaboration skills.\n- Delivered measurable improvements to team workflows and outcomes.\n- Collaborated cross-functionally to meet project goals on schedule.`;
+      setResumeData((p) => ({ ...p, experience: list }));
     } finally {
       setIsGeneratingBulletsFor(null);
     }

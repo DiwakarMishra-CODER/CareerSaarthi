@@ -1,32 +1,60 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useOutletContext } from 'react-router-dom';
 import { api } from '../api/client';
-import { ArrowLeft, Briefcase, DollarSign, TrendingUp, Award, Loader2, IndianRupee } from 'lucide-react';
+import { ArrowLeft, Briefcase, DollarSign, TrendingUp, Award, Loader2, IndianRupee, CheckCircle, Target } from 'lucide-react';
 import BackgroundAnimation from '../components/UI/BackgroundAnimation';
+import { getCachedData, setCachedData } from '../utils/cache.js';
+
+const buildFallbackDetails = (jobTitleDecoded) => ({
+    detailed_description: `We couldn't reach the AI service to generate a tailored description for "${jobTitleDecoded}" right now. In general, this role typically involves collaborating with a team, owning specific deliverables, and growing your expertise over time. Please try refreshing the page in a bit for a fully personalized breakdown.`,
+    salary_benchmarks_inr: { entry_level: 'Varies by company & location', mid_level: 'Varies by company & location', senior_level: 'Varies by company & location' },
+    career_trajectory: ['Individual contributor', 'Senior individual contributor / team lead', 'Manager or staff-level specialist'],
+    required_qualifications: ['A relevant degree or equivalent practical experience', 'Core skills for the role', 'Strong communication and collaboration'],
+    isFallback: true,
+});
 
 export default function JobDetails() {
     const { jobTitle } = useParams();
+    const { profile } = useOutletContext() || {};
     const [details, setDetails] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
+        const decodedTitle = decodeURIComponent(jobTitle);
+        const cacheKey = `job_details_${decodedTitle.trim().toLowerCase().replace(/\s+/g, '_')}`;
+
         const fetchJobDetails = async () => {
             setIsLoading(true);
+
+            const cached = getCachedData(cacheKey);
+            if (cached) {
+                setDetails(cached);
+                setIsLoading(false);
+                return;
+            }
+
             try {
+                const skillsContext = profile?.skills?.length
+                    ? `The candidate's stated skills are: ${profile.skills.join(', ')}. Compare these against the role's required qualifications.`
+                    : '';
                 const prompt = `
-                    Generate a detailed job description for the role of a "${decodeURIComponent(jobTitle)}".
+                    Generate a detailed job description for the role of a "${decodedTitle}".
                     Provide a comprehensive overview for the Indian job market including:
                     1.  A "detailed_description" of typical daily tasks and responsibilities.
                     2.  "salary_benchmarks_inr" with average salary ranges as strings for entry, mid, and senior levels in INR (e.g., "₹8-12 LPA").
                     3.  A "career_trajectory" outlining potential growth paths.
                     4.  A list of "required_qualifications" including common degrees and certifications.
+                    ${skillsContext}
                     Return ONLY a valid JSON object with the structure:
                     {
                         "detailed_description": "string",
                         "salary_benchmarks_inr": { "entry_level": "string", "mid_level": "string", "senior_level": "string" },
                         "career_trajectory": ["string"],
-                        "required_qualifications": ["string"]
+                        "required_qualifications": ["string"],
+                        "matched_qualifications": ["string"],
+                        "skill_gaps": ["string"]
                     }
+                    If no candidate skills were given, return empty arrays for "matched_qualifications" and "skill_gaps".
                 `;
 
                 const data = await api.post('/api/ai/gemini', {
@@ -37,9 +65,11 @@ export default function JobDetails() {
                     },
                 });
                 const result = JSON.parse(data.candidates[0].content.parts[0].text);
+                setCachedData(cacheKey, result);
                 setDetails(result);
             } catch (error) {
                 console.error("Job details generation error:", error);
+                setDetails(buildFallbackDetails(decodedTitle));
             } finally {
                 setIsLoading(false);
             }
@@ -48,7 +78,7 @@ export default function JobDetails() {
         if (jobTitle) {
             fetchJobDetails();
         }
-    }, [jobTitle]);
+    }, [jobTitle, profile]);
 
     const InfoCard = ({ icon: Icon, title, children, color }) => (
         <div className="bg-white/5 backdrop-blur-md border border-white/10 p-6 rounded-xl">
@@ -114,6 +144,31 @@ export default function JobDetails() {
                                 ))}
                             </ul>
                         </InfoCard>
+
+                        {((details.matched_qualifications?.length > 0) || (details.skill_gaps?.length > 0)) && (
+                            <InfoCard icon={Target} title="Your Skill Match" color="text-blue-400">
+                                {details.matched_qualifications?.length > 0 && (
+                                    <div className="mb-3">
+                                        <p className="text-sm font-bold text-emerald-400 mb-1">You already have:</p>
+                                        <ul className="list-none space-y-1">
+                                            {details.matched_qualifications.map((skill, index) => (
+                                                <li key={index} className="flex items-center gap-2"><CheckCircle size={14} className="text-emerald-400 flex-shrink-0" /> {skill}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                                {details.skill_gaps?.length > 0 && (
+                                    <div>
+                                        <p className="text-sm font-bold text-amber-400 mb-1">Gaps to work on:</p>
+                                        <ul className="list-disc list-inside space-y-1">
+                                            {details.skill_gaps.map((skill, index) => (
+                                                <li key={index}>{skill}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                            </InfoCard>
+                        )}
                     </>
                 )}
             </div>

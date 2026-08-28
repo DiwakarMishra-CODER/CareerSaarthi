@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { TrendingUp, ArrowRight, Loader2 } from 'lucide-react';
 import { api } from '../../api/client';
+import { getCachedData, setCachedData } from '../../utils/cache.js';
 
 const defaultTrendingJobs = [
     { title: "Data Scientist", field: "Data & AI", type: "tech" },
@@ -48,6 +49,15 @@ export default function TrendingJobs({ profile }) {
 
     const getPersonalizedJobs = async (skills) => {
         setIsLoading(true);
+
+        const cacheKey = `trending_jobs_${[...skills].sort().join(',').toLowerCase()}`;
+        const cached = getCachedData(cacheKey);
+        if (cached) {
+            setJobs(cached);
+            setIsLoading(false);
+            return;
+        }
+
         try {
             const prompt = `
                 Based on the user's skills: [${skills.join(', ')}], generate a list of 7 trending job roles that are a good match for the Indian job market.
@@ -64,6 +74,7 @@ export default function TrendingJobs({ profile }) {
             const result = JSON.parse(data.candidates[0].content.parts[0].text);
 
             if (result.jobs && result.jobs.length > 0) {
+                setCachedData(cacheKey, result.jobs);
                 setJobs(result.jobs);
             }
         } catch (error) {

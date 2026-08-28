@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../api/client';
+import { getCachedData, setCachedData } from '../../utils/cache.js';
 import { Target, Loader2, ArrowRight } from 'lucide-react';
 
 export default function SkillGapWidget({ profile, roadmap }) {
@@ -23,6 +24,14 @@ export default function SkillGapWidget({ profile, roadmap }) {
         const uniqueRequiredSkills = [...new Set(requiredSkills)];
 
         if (uniqueRequiredSkills.length === 0) {
+            setIsLoading(false);
+            return;
+        }
+
+        const cacheKey = `skill_gaps_${(roadmap.career_goal || '').toLowerCase()}_${[...userSkills].sort().join(',').toLowerCase()}`;
+        const cached = getCachedData(cacheKey);
+        if (cached) {
+            setSkillGaps(cached);
             setIsLoading(false);
             return;
         }
@@ -49,6 +58,7 @@ export default function SkillGapWidget({ profile, roadmap }) {
         const jsonString = data.candidates[0].content.parts[0].text;
         const result = JSON.parse(jsonString);
 
+        setCachedData(cacheKey, result.skill_gaps || []);
         setSkillGaps(result.skill_gaps || []);
       } catch (error) {
         console.error("Error analyzing skill gaps:", error);

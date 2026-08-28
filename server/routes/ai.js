@@ -8,15 +8,21 @@ const axios = require('axios');
 router.post('/generate', async (req, res) => {
   try {
     const { prompt, systemPrompt = '', featureType = 'chat' } = req.body;
-    if (!prompt) return res.status(400).json({ error: 'prompt is required' });
+    // An empty string is intentional (e.g. the interview's first turn relies on
+    // systemPrompt alone) — only reject when prompt is missing entirely.
+    if (typeof prompt !== 'string') return res.status(400).json({ error: 'prompt is required' });
 
-    let model = 'mistralai/mistral-nemo:free'; // default for chat and fallback
+    // Free OpenRouter models get congested independently of each other, so a
+    // single hardcoded model is a single point of failure. Try each candidate
+    // in turn (with a short backoff retry per model) before giving up. The paid
+    // gpt-4o-mini has been fully reliable in practice, so it's the last-resort
+    // fallback once every free option is exhausted — costs a fraction of a cent
+    // per call and only gets used when the free tier is genuinely down.
+    let modelChain = ['minimax/minimax-m3:free', 'nvidia/nemotron-3-super-120b-a12b:free', 'google/gemma-4-31b-it:free', 'openai/gpt-4o-mini'];
     let responseFormat = null;
 
-    if (featureType === 'interview') {
-      model = 'meta-llama/llama-3-70b-instruct';
-    } else if (featureType === 'resume' || featureType === 'linkedin' || featureType === 'explorer') {
-      model = 'openai/gpt-4o-mini';
+    if (featureType === 'resume' || featureType === 'linkedin' || featureType === 'explorer') {
+      modelChain = ['openai/gpt-4o-mini']; // paid, reliable — no fallback needed
       responseFormat = { type: 'json_object' };
     }
 
@@ -24,25 +30,40 @@ router.post('/generate', async (req, res) => {
     if (systemPrompt) messages.push({ role: 'system', content: systemPrompt });
     messages.push({ role: 'user', content: prompt });
 
-    const payload = { model, messages };
-    if (responseFormat) payload.response_format = responseFormat;
+    let lastErr = null;
+    for (const model of modelChain) {
+      const payload = { model, messages };
+      if (responseFormat) payload.response_format = responseFormat;
 
-    const response = await axios.post(
-      'https://openrouter.ai/api/v1/chat/completions',
-      payload,
-      {
-        headers: {
-          'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-          'Content-Type': 'application/json',
-          'HTTP-Referer': process.env.APP_URL || 'https://careersaarthi.vercel.app',
-          'X-Title': 'CareerSaarthi',
-        },
+      let delay = 1000;
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          const response = await axios.post(
+            'https://openrouter.ai/api/v1/chat/completions',
+            payload,
+            {
+              headers: {
+                'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+                'Content-Type': 'application/json',
+                'HTTP-Referer': process.env.APP_URL || 'https://careersaarthi.vercel.app',
+                'X-Title': 'CareerSaarthi',
+              },
+            }
+          );
+          const content = response.data?.choices?.[0]?.message?.content;
+          if (!content) return res.status(502).json({ error: 'Unexpected response structure from OpenRouter' });
+          return res.json({ content });
+        } catch (err) {
+          lastErr = err;
+          if (err.response?.status !== 429) break; // non-429: this model won't recover, try the next one
+          await new Promise((r) => setTimeout(r, delay));
+          delay *= 2;
+        }
       }
-    );
-
-    const content = response.data?.choices?.[0]?.message?.content;
-    if (!content) return res.status(502).json({ error: 'Unexpected response structure from OpenRouter' });
-    return res.json({ content });
+      // Exhausted retries (or hit a non-429 error) for this model — move to the next candidate.
+    }
+    console.error('AI generate error (all models exhausted):', lastErr?.response?.data || lastErr?.message);
+    return res.status(lastErr?.response?.status || 500).json({ error: 'Failed to generate AI response' });
   } catch (err) {
     console.error('AI generate error:', err.response?.data || err.message);
     return res.status(500).json({ error: 'Failed to generate AI response' });

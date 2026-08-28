@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Loader2, Sparkles, Zap, ArrowRight, Bookmark, Briefcase } from 'lucide-react';
 import { api, getUserId } from '../api/client';
@@ -59,6 +60,7 @@ const EditorialBackground = () => {
 };
 
 const JobExplorer = () => {
+    const { profile } = useOutletContext() || {};
     const [query, setQuery] = useState('');
     const [location, setLocation] = useState('');
     const [country, setCountry] = useState('in');
@@ -107,6 +109,18 @@ const JobExplorer = () => {
             fetchJobs(query, location, country);
         }
     }, [country]);
+
+    // Once the shared profile loads, pre-fill the search with the candidate's
+    // current role/skills (only if they haven't already typed a search themselves).
+    useEffect(() => {
+        if (!profile || query) return;
+        const defaultQuery = profile.current_role || profile.skills?.[0] || '';
+        if (!defaultQuery) return;
+        const defaultLocation = profile.location || location;
+        setQuery(defaultQuery);
+        if (defaultLocation) setLocation(defaultLocation);
+        fetchJobs(defaultQuery, defaultLocation, country);
+    }, [profile]);
 
     const fetchJobs = async (searchQuery = query, searchLoc = location, searchCountry = country) => {
         setIsSearching(true);

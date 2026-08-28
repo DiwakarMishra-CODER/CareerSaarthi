@@ -88,7 +88,7 @@ export default function Dashboard() {
           if (profile && profile.current_role && profile.career_goals) {
             try {
               const data = await api.post('/api/ai/gemini', {
-                model: 'gemini-2.0-flash',
+                model: 'gemini-2.5-flash',
                 body: { contents: [{ parts: [{ text: `Based on this user's profile (Role: ${profile.current_role}, Goal: ${profile.career_goals}), provide one single, short, and actionable suggestion for their next career step. Be encouraging.` }] }] },
               });
               newAiSuggestion = data.candidates[0].content.parts[0].text.trim();

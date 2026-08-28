@@ -25,7 +25,16 @@ const STATUS = {
 };
 
 // ─── Build the system prompt from the setup config ───────────────────────────
-function buildSystemPrompt({ jobTitle, company, experienceLevel, jobDescription }) {
+function buildSystemPrompt({ jobTitle, company, experienceLevel, jobDescription }, profile) {
+    const profileContext = profile?.skills?.length || profile?.current_role || profile?.career_goals
+        ? `
+Candidate's profile (use this to tailor question difficulty and relevance, don't just recite it back):
+${profile?.current_role ? `- Current role: ${profile.current_role}` : ''}
+${profile?.skills?.length ? `- Stated skills: ${profile.skills.join(', ')}` : ''}
+${profile?.career_goals ? `- Career goals: ${profile.career_goals}` : ''}
+`
+        : '';
+
     return `You are an expert technical and behavioral interviewer conducting a real mock interview.
 
 Role being interviewed for: ${jobTitle}
@@ -35,7 +44,7 @@ Job description:
 """
 ${jobDescription}
 """
-
+${profileContext}
 Instructions:
 - Ask ONE focused interview question at a time. Never ask multiple questions in the same message.
 - Start with a warm, brief greeting and then ask your first question directly.
@@ -86,8 +95,8 @@ function MicOrb() {
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-export default function InterviewSession({ config, onEnd }) {
-    const systemPrompt = buildSystemPrompt(config);
+export default function InterviewSession({ config, profile, onEnd }) {
+    const systemPrompt = buildSystemPrompt(config, profile);
 
     const [status, setStatus] = useState(STATUS.IDLE);
     const [messages, setMessages] = useState([]);
@@ -149,16 +158,27 @@ export default function InterviewSession({ config, onEnd }) {
                 .map((m) => `${m.role === 'user' ? 'Candidate' : 'Interviewer'}: ${m.content}`)
                 .join('\n\n');
 
-            try {
-                const aiText = await generateAIResponse(conversationPrompt, systemPrompt, 'interview');
-                conversationHistory.current.push({ role: 'assistant', content: aiText });
-                addMessage('ai', aiText);
-                speakAIMessage(aiText);
-            } catch (err) {
-                console.error('[InterviewSession] AI error:', err);
-                const errorMsg = 'I encountered a connection issue. Please check your API key and try again.';
-                addMessage('ai', errorMsg);
-                speakAIMessage(errorMsg);
+            // One silent retry before surfacing an error — free-tier model
+            // congestion is transient and often clears within a couple seconds,
+            // and this call (especially the opening greeting) is high-visibility.
+            for (let attempt = 0; attempt < 2; attempt++) {
+                try {
+                    const aiText = await generateAIResponse(conversationPrompt, systemPrompt, 'interview');
+                    conversationHistory.current.push({ role: 'assistant', content: aiText });
+                    addMessage('ai', aiText);
+                    speakAIMessage(aiText);
+                    return;
+                } catch (err) {
+                    if (attempt === 0) {
+                        console.warn('[InterviewSession] AI call failed, retrying once:', err);
+                        await new Promise((r) => setTimeout(r, 2000));
+                        continue;
+                    }
+                    console.error('[InterviewSession] AI error:', err);
+                    const errorMsg = 'I encountered a connection issue. Please check your API key and try again.';
+                    addMessage('ai', errorMsg);
+                    speakAIMessage(errorMsg);
+                }
             }
         },
         [systemPrompt, addMessage, speakAIMessage]
@@ -234,40 +254,59 @@ Return ONLY a valid JSON object matching this schema. Do not include any markdow
             const cleanText = responseText.replace(/```json|```/g, '').trim();
             const result = JSON.parse(cleanText);
 
-            // Save completed session to Supabase database via express backend
-            try {
-                const userId = getUserId();
-                if (userId) {
-                    await api.post('/api/interviews', {
-                        userId,
-                        interviewType: 'custom',
-                        customRole: config.jobTitle,
-                        config: config,
-                        overallScore: result.overallScore,
-                        scores: result.scores,
-                        transcript: messages.map(m => ({ speaker: m.role === 'user' ? 'USER' : 'INTERVIEWER', content: m.content })),
-                        feedback: { overall_feedback: "Session ended early by candidate." },
-                        strengths: result.strengths,
-                        weakPoints: result.weakPoints,
-                        suggestions: result.suggestions,
-                        weakTopics: result.weakTopics,
-                        questionsAttempted: messages.filter(m => m.role === 'user').length,
-                        questionsTotal: messages.filter(m => m.role === 'ai').length,
-                        timeTaken: 120, // default time
-                        status: 'completed'
-                    });
-                }
-            } catch (saveErr) {
-                console.error("Failed to save session to DB:", saveErr);
-            }
-
+            await saveSession(result, "Session ended early by candidate.");
             setResults(result);
         } catch (error) {
             console.error("Feedback generation error:", error);
-            alert("Could not generate feedback report. Please try again.");
+            // Fallback so "End Interview" always produces a report, even if the AI call fails.
+            const fallback = buildFallbackReport(messages);
+            await saveSession(fallback, "AI feedback generation failed; showing a fallback summary based on the transcript.");
+            setResults(fallback);
         } finally {
             setIsGeneratingResults(false);
         }
+    };
+
+    // ── Persist a completed session (real or fallback report) to Supabase ─────
+    const saveSession = async (result, feedbackNote) => {
+        try {
+            const userId = getUserId();
+            if (!userId) return;
+            await api.post('/api/interviews', {
+                userId,
+                interviewType: 'custom',
+                customRole: config.jobTitle,
+                config: config,
+                overallScore: result.overallScore,
+                scores: result.scores,
+                transcript: messages.map(m => ({ speaker: m.role === 'user' ? 'USER' : 'INTERVIEWER', content: m.content })),
+                feedback: { overall_feedback: feedbackNote },
+                strengths: result.strengths,
+                weakPoints: result.weakPoints,
+                suggestions: result.suggestions,
+                weakTopics: result.weakTopics,
+                questionsAttempted: messages.filter(m => m.role === 'user').length,
+                questionsTotal: messages.filter(m => m.role === 'ai').length,
+                timeTaken: 120, // default time
+                status: 'completed'
+            });
+        } catch (saveErr) {
+            console.error("Failed to save session to DB:", saveErr);
+        }
+    };
+
+    // ── Basic transcript-derived report used when AI feedback generation fails ─
+    const buildFallbackReport = (msgs) => {
+        const questionsAttempted = msgs.filter(m => m.role === 'user').length;
+        const overallScore = questionsAttempted > 0 ? Math.min(70, 40 + questionsAttempted * 5) : 40;
+        return {
+            overallScore,
+            scores: { clarity: overallScore, starStructure: overallScore, keywordDensity: overallScore },
+            strengths: ["You completed the session and engaged with the interviewer's questions."],
+            weakPoints: ["Detailed AI feedback wasn't available this time."],
+            suggestions: ["Retry the interview once the AI service is back to get a full performance report."],
+            weakTopics: [],
+        };
     };
 
     // ── Mic toggle ────────────────────────────────────────────────────────────

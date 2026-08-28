@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { History } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import InterviewSetup from '../components/Interview/InterviewSetup';
 import InterviewSession from '../components/Interview/InterviewSession';
 // Removed InterviewBackground to inherit global background
@@ -12,6 +12,7 @@ import InterviewSession from '../components/Interview/InterviewSession';
  */
 export default function MockInterview() {
     const navigate = useNavigate();
+    const { profile } = useOutletContext();
     const [interviewConfig, setInterviewConfig] = useState(null);
 
     // Called by InterviewSetup when the form is submitted
@@ -29,6 +30,7 @@ export default function MockInterview() {
         return (
             <InterviewSession
                 config={interviewConfig}
+                profile={profile}
                 onEnd={handleSessionEnd}
             />
         );

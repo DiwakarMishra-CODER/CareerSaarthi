@@ -27,9 +27,17 @@
 
 ## 📖 What is CareerSaarthi?
 
-**CareerSaarthi** (formerly NexaGen AI) is a full-stack, AI-powered career mentorship ecosystem built for students navigating the competitive tech industry. It consolidates every tool a job-seeker needs — resume building, AI analysis, mock interviews, LinkedIn optimization, and job discovery — into one beautifully crafted platform.
+**CareerSaarthi** (formerly NexaGen AI / CareerForge) is a full-stack, AI-powered career mentorship ecosystem built for students navigating the competitive tech industry. It consolidates every tool a job-seeker needs — resume building, AI analysis, mock interviews, LinkedIn optimization, and job discovery — into one beautifully crafted platform.
 
-The platform features a **cinematic 3D landing experience** built with Three.js and React Three Fiber, smooth GPU-accelerated animations via GSAP + Framer Motion, and a robust Node.js/Supabase backend powering real AI integrations through OpenRouter LLMs.
+The platform features a **cinematic 3D landing experience** built with Three.js and React Three Fiber, smooth GPU-accelerated animations via GSAP + Framer Motion, and a robust Node.js/Supabase backend powering real AI integrations through OpenRouter and Gemini LLMs.
+
+<div align="center">
+<br />
+<img src="docs/screenshots/dashboard.png" alt="CareerSaarthi personal dashboard" width="90%" />
+<br />
+<sub><em>The personal dashboard — activity stats, resume/roadmap/interview counters, and quick access to every tool.</em></sub>
+<br /><br />
+</div>
 
 ---
 
@@ -42,16 +50,29 @@ Build job-winning resumes with precision-crafted templates. The editor supports 
 Upload any resume PDF and receive instant, structured AI feedback: ATS compatibility scores, keyword gap analysis, impact rating, and actionable improvement suggestions powered by large language models.
 
 ### 🎤 AI Mock Interview Simulator
-Realistic, role-specific interview sessions driven by advanced LLMs. The system generates contextual questions, evaluates responses in real-time, and stores a full session history with performance analytics.
+Realistic, role-specific interview sessions driven by LLMs. Questions are generated contextually, answers are scored against clarity, STAR-structure, and keyword-density rubrics, and every session is stored with full performance analytics and history.
 
 ### 💼 LinkedIn Optimizer
 AI-driven analysis of your LinkedIn profile to identify gaps, suggest headline improvements, and provide data-driven strategies to attract recruiters — directly from a PDF export of your profile.
 
 ### 🗺️ Career Explorer & Job Finder
-Discover curated career roadmaps with skill trees, learning paths, and salary benchmarks for roles across the industry. The integrated Job Explorer surfaces real job listings with detailed descriptions and match scores.
+Discover curated career roadmaps with skill trees, learning paths, and salary benchmarks for roles across the industry. The integrated Job Explorer surfaces real job listings (via the Adzuna API) with detailed descriptions and match scores.
 
 ### 📊 Personal Dashboard
-A unified command center showing activity history, interview performance trends, resume versions, and a personalized AI assistant for quick queries.
+A unified command center showing activity history, interview performance trends, resume versions, and a personalized AI assistant for quick queries — all sharing the same profile context across features.
+
+---
+
+## 🧠 Engineering Highlights
+
+A few things worth calling out beyond the feature list:
+
+- **No API keys ever ship to the browser.** Every LLM call — OpenRouter and Gemini alike — is proxied through the Express backend (`/api/ai/generate`, `/api/ai/gemini`). Client-side calls were audited and moved server-side so secrets never touch the bundle.
+- **Model fallback chains with backoff.** `/api/ai/generate` walks a prioritized list of free OpenRouter models with exponential backoff on rate limits, and falls back to a cheap paid model (`gpt-4o-mini`) only when every free option is exhausted — keeping the app usable without sacrificing cost efficiency.
+- **Gemini key-pool rotation.** `/api/ai/gemini` pools multiple `GEMINI_API_KEY_*` values, picks one at random per request, and retries with backoff on 429s, spreading load across quota instead of hard-failing.
+- **Structured interview scoring.** Mock interview answers are graded against a defined rubric (clarity, STAR structure, keyword density) rather than a single opaque LLM score, so feedback is consistent and explainable.
+- **Shared profile context.** Resume, interview, and LinkedIn features all read from the same profile state, so AI feedback stays consistent across tools instead of each feature reasoning from scratch.
+- **Graceful degradation.** The job search endpoint falls back to a curated mock listing set if the Adzuna API keys aren't configured, so the app never breaks in a partial-config environment.
 
 ---
 
@@ -73,11 +94,11 @@ A unified command center showing activity history, interview performance trends,
 | Technology | Purpose |
 |---|---|
 | **Node.js + Express** | REST API server |
-| **Supabase (PostgreSQL)** | Database, Auth & storage |
+| **Supabase (PostgreSQL)** | Database & storage |
 | **JWT + Google OAuth** | Secure authentication |
 | **Cloudinary** | Image & asset hosting |
-| **Multer + pdf-parse** | Resume PDF upload & text extraction |
-| **OpenRouter API** | LLM integration for AI features |
+| **Multer + pdf-parse** | Resume/LinkedIn PDF upload & text extraction |
+| **OpenRouter + Gemini** | LLM integration for AI features (server-side proxy only) |
 | **bcryptjs** | Password hashing |
 
 ---
@@ -85,7 +106,7 @@ A unified command center showing activity history, interview performance trends,
 ## 🏗️ Project Architecture
 
 ```
-CareerForge/
+CareerSaarthi/
 ├── src/
 │   ├── components/
 │   │   ├── 3d/              # Three.js scene & WebGL components
@@ -98,31 +119,49 @@ CareerForge/
 │   ├── pages/               # Route-level page components
 │   │   ├── LandingPage.jsx
 │   │   ├── Dashboard.jsx
-│   │   ├── ResumeBuilder.jsx
-│   │   ├── ResumeAnalyzer.jsx
-│   │   ├── InterviewPrep.jsx
-│   │   ├── InterviewHistory.jsx
+│   │   ├── ResumeBuilder.jsx / ResumeAnalyzer.jsx / ResumePreview.jsx
+│   │   ├── InterviewPrep.jsx / MockInterview.jsx / InterviewHistory.jsx
 │   │   ├── LinkedInOptimizer.jsx
-│   │   ├── JobExplorer.jsx
-│   │   ├── CareerExplorer.jsx
-│   │   └── Profile.jsx
-│   ├── api/                 # Axios API layer
-│   ├── services/            # Business logic services
-│   └── utils/               # Helpers & shared utilities
+│   │   ├── JobExplorer.jsx / JobDetails.jsx
+│   │   ├── CareerExplorer.jsx / CareerCompass.jsx / Strategies.jsx
+│   │   ├── AIAssistant.jsx
+│   │   └── Profile.jsx / SignIn.jsx
+│   ├── services/ai/         # OpenRouter/Gemini client wrappers, interview & speech services
+│   ├── api/                 # Axios API client layer
+│   └── utils/                # Helpers & shared utilities
 │
 └── server/
     ├── routes/
-    │   ├── auth.js          # JWT + Google OAuth
-    │   ├── resumes.js       # Resume CRUD + AI analysis
-    │   ├── interviews.js    # Interview sessions & history
-    │   ├── jobs.js          # Job discovery
-    │   ├── profiles.js      # User profiles
+    │   ├── auth.js          # Register/login, Google OAuth, JWT session
+    │   ├── ai.js             # OpenRouter + Gemini proxy (fallback chains, key rotation)
+    │   ├── resumes.js       # Resume CRUD + AI analysis (PDF upload)
+    │   ├── interviews.js    # Interview sessions, scoring, history & analytics
+    │   ├── profiles.js       # User profiles + LinkedIn PDF analysis
+    │   ├── jobs.js           # Job search (Adzuna) + saved jobs
     │   ├── roadmaps.js      # Career roadmaps
-    │   └── upload.js        # File upload (Cloudinary)
-    ├── models/              # Data models
+    │   └── upload.js         # Profile picture upload (Cloudinary)
+    ├── models/              # Data models (User, Resume, InterviewSession, etc.)
     ├── lib/                 # Supabase client & helpers
     └── index.js             # Express server entry point
 ```
+
+---
+
+## 🔌 API Overview
+
+All routes are mounted under `/api` and, aside from `auth`, expect an authenticated Supabase user.
+
+| Route | Responsibility |
+|---|---|
+| `POST /api/auth/register`, `/login`, `/google`, `GET /me` | Email/password + Google OAuth authentication, JWT session |
+| `POST /api/ai/generate` | Server-side LLM proxy with model fallback chain for chat/interview/generic completions |
+| `POST /api/ai/gemini` | Server-side Gemini proxy with rotating key pool and 429 backoff |
+| `GET/POST /api/resumes`, `POST /api/resumes/analyze` | Resume CRUD + AI-powered ATS analysis from an uploaded PDF |
+| `GET/POST/PUT /api/interviews`, `GET /stats/patterns`, `POST /cheat-report` | Interview session lifecycle, scoring, history & pattern analytics |
+| `GET/POST /api/profiles`, `POST /analyze-linkedin` | Profile CRUD + AI LinkedIn PDF analysis |
+| `GET /api/jobs/search`, `GET/POST/DELETE /saved` | Live job search (Adzuna) with mock fallback, saved-jobs management |
+| `GET/POST /api/roadmaps` | Curated career roadmap data |
+| `POST /api/upload/profile-picture` | Cloudinary-backed avatar upload |
 
 ---
 
@@ -131,19 +170,19 @@ CareerForge/
 ### Prerequisites
 - Node.js ≥ 18
 - A [Supabase](https://supabase.com) project
-- An [OpenRouter](https://openrouter.ai) API key
+- An [OpenRouter](https://openrouter.ai) API key (and optionally a [Gemini](https://ai.google.dev) key)
 - A [Cloudinary](https://cloudinary.com) account
 
 ### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/DiwakarMishra-CODER/CareerSaarthi.git
-cd CareerForge
+cd CareerSaarthi
 ```
 
 ### 2. Configure Environment Variables
 
-**Frontend** — create `.env` in the root:
+**Frontend** — create `.env` in the root (see `.env.example`). Only publishable, non-secret values belong here — Vite compiles them straight into the client bundle:
 ```env
 VITE_SUPABASE_URL=your_supabase_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
@@ -151,17 +190,16 @@ VITE_API_BASE_URL=http://localhost:4000
 VITE_GOOGLE_CLIENT_ID=your_google_client_id
 ```
 
-**Backend** — create `server/.env` (see `server/.env.example`):
+**Backend** — create `server/.env` (see `server/.env.example`). All AI provider keys live here only, never on the client:
 ```env
 PORT=4000
 SUPABASE_URL=your_supabase_url
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-JWT_SECRET=your_jwt_secret
-GOOGLE_CLIENT_ID=your_google_client_id
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 OPENROUTER_API_KEY=your_openrouter_api_key
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_cloudinary_api_key
-CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+GEMINI_API_KEY_1=your_gemini_api_key
+GOOGLE_CLIENT_ID=your_google_client_id
+ADZUNA_APP_ID=your_adzuna_app_id
+ADZUNA_APP_KEY=your_adzuna_app_key
 ```
 
 ### 3. Install & Run
@@ -186,7 +224,7 @@ Open [http://localhost:5173](http://localhost:5173) and you're live. 🎉
 
 ## 🌐 Deployment
 
-The frontend is deployed on **Netlify** via `netlify.toml` with SPA redirect rules. The backend can be deployed to any Node.js-compatible host (Railway, Render, etc.).
+The frontend is deployed on **Vercel/Netlify** (both `vercel.json` and `netlify.toml` are configured with SPA redirect rules). The backend deploys to any Node.js-compatible host (Railway, Render, Vercel Functions, etc.).
 
 ```toml
 # netlify.toml (already configured)
@@ -202,7 +240,7 @@ The frontend is deployed on **Netlify** via `netlify.toml` with SPA redirect rul
 
 CareerSaarthi is built with a **premium-first** design ethos:
 
-- **Dark, cinematic aesthetic** — deep navy/slate backgrounds with emerald accent gradients
+- **Dark, cinematic aesthetic** — deep navy/slate backgrounds with electric blue-to-violet gradients
 - **3D WebGL hero** — a live Three.js particle field creating depth and motion on landing
 - **Glassmorphism UI** — frosted glass cards with `backdrop-blur` and translucent borders
 - **Physics-based animations** — spring-driven Framer Motion transitions and magnetic buttons
